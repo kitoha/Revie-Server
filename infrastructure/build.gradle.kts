@@ -16,12 +16,11 @@ dependencies {
   implementation("org.springframework:spring-context")
   implementation("org.springframework:spring-tx")
 
-  //후에 필요할 때 주석 제거. 현재는 로직 중심 작업.
-//  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-//  implementation("org.mariadb:r2dbc-mariadb:1.2.3")-
-//  implementation("io.r2dbc:r2dbc-pool")
-//
-//  implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
+  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
+  implementation("org.mariadb:r2dbc-mariadb")
+  implementation("io.r2dbc:r2dbc-pool")
+
+  implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
 
   implementation("org.springframework.boot:spring-boot-starter-webflux")
 
