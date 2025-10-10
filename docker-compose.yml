@@ -1,0 +1,61 @@
+# local 설정
+services:
+  # MariaDB
+  mariadb:
+    image: mariadb:11.2
+    container_name: revie-mariadb
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root1234
+      MYSQL_DATABASE: revie
+      MYSQL_USER: revie
+      MYSQL_PASSWORD: revie1234
+      TZ: Asia/Seoul
+    ports:
+      - "3307:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    command: [
+      '--character-set-server=utf8mb4',
+      '--collation-server=utf8mb4_unicode_ci',
+      '--log-bin-trust-function-creators=1'
+    ]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - revie-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: revie-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root1234
+      MONGO_INITDB_DATABASE: revie
+      TZ: Asia/Seoul
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - revie-network
+
+volumes:
+  mariadb_data:
+    driver: local
+  mongodb_data:
+    driver: local
+
+networks:
+  revie-network:
+    driver: bridge

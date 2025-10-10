@@ -1,0 +1,25 @@
+spring:
+  r2dbc:
+    url: r2dbc:mariadb://localhost:3307/revie
+    username: revie
+    password: revie1234
+    pool:
+      initial-size: 10
+      max-size: 20
+      max-idle-time: 30m
+
+  data:
+    mongodb:
+      uri: mongodb://revie:revie1234@localhost:27017/revie?authSource=revie
+      database: revie
+
+  webflux:
+    base-path: /api
+
+logging:
+  level:
+    root: INFO
+    com.revie: DEBUG
+    org.springframework.data.r2dbc: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    io.r2dbc.pool: DEBUG
