@@ -1,4 +1,4 @@
-package revie.dto
+package revie.dto.review
 
 import revie.enums.ReviewStatus
 import java.time.LocalDateTime

@@ -1,9 +1,5 @@
 package revie.repository
 
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.data.domain.Sort
 import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
@@ -11,7 +7,7 @@ import org.springframework.data.relational.core.query.Query
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import revie.dto.ReviewSession
+import revie.dto.review.ReviewSession
 import revie.entity.ReviewSessionEntity
 import revie.enums.ReviewStatus
 import revie.utils.Tsid

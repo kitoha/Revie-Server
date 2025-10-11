@@ -2,7 +2,7 @@ package revie.entity
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Table
-import revie.dto.ReviewSession
+import revie.dto.review.ReviewSession
 import revie.enums.ReviewStatus
 import revie.utils.Tsid
 

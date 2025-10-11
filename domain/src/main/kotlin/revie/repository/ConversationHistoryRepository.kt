@@ -1,8 +1,8 @@
 package revie.repository
 
 import reactor.core.publisher.Mono
-import revie.dto.ConversationHistory
-import revie.dto.ConversationStats
+import revie.dto.chat.ConversationHistory
+import revie.dto.chat.ConversationStats
 
 interface ConversationHistoryRepository {
 

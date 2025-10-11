@@ -1,36 +1,38 @@
-package revie.dto
+package revie.dto.review
 
+import revie.dto.chat.ChatMessage
 import revie.enums.ReviewStatus
 import java.time.LocalDateTime
 
-data class ReviewListDto(
+data class ReviewDetailDto(
   val sessionId: String,
+  val userId: String,
   val title: String,
   val pullRequestUrl: String,
   val status: ReviewStatus,
-  val messageCount: Int,
-  val lastMessage: String?,
+  val messages: List<ChatMessage>,
   val createdAt: LocalDateTime?,
   val updatedAt: LocalDateTime?
-){
+) {
+
   companion object{
     fun create(
       sessionId: String,
+      userId: String,
       title: String,
       pullRequestUrl: String,
       status: ReviewStatus,
-      messageCount: Int,
-      lastMessage: String?,
+      messages: List<ChatMessage>,
       createdAt: LocalDateTime?,
       updatedAt: LocalDateTime?
-    ): ReviewListDto{
-      return ReviewListDto(
+    ): ReviewDetailDto{
+      return ReviewDetailDto(
         sessionId = sessionId,
+        userId = userId,
         title = title,
         pullRequestUrl = pullRequestUrl,
         status = status,
-        messageCount = messageCount,
-        lastMessage = lastMessage,
+        messages = messages,
         createdAt = createdAt,
         updatedAt = updatedAt
       )

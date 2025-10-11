@@ -2,7 +2,7 @@ package revie.document
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
-import revie.dto.ConversationHistory
+import revie.dto.chat.ConversationHistory
 
 @Document("conversation_history")
 class ConversationHistoryDocument(

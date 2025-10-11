@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Mono
 import revie.document.ConversationHistoryDocument
-import revie.dto.ConversationHistory
-import revie.dto.ConversationStats
+import revie.dto.chat.ConversationHistory
+import revie.dto.chat.ConversationStats
 import java.time.LocalDateTime
 
 @Repository

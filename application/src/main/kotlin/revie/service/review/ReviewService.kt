@@ -1,11 +1,11 @@
-package revie.service
+package revie.service.review
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Mono
-import revie.dto.ConversationHistory
-import revie.dto.ReviewListDto
-import revie.dto.ReviewSession
+import revie.dto.chat.ConversationHistory
+import revie.dto.review.ReviewListDto
+import revie.dto.review.ReviewSession
 import revie.enums.ReviewStatus
 import revie.repository.ConversationHistoryRepository
 import revie.repository.ReviewSessionRepository

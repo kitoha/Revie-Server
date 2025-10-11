@@ -1,6 +1,6 @@
 package revie.document
 
-import revie.dto.ChatMessage
+import revie.dto.chat.ChatMessage
 import revie.enums.MessageRole
 import java.time.LocalDateTime
 

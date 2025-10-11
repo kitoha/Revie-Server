@@ -1,4 +1,4 @@
-package revie.dto
+package revie.dto.chat
 
 import revie.enums.MessageRole
 import java.time.LocalDateTime

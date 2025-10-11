@@ -1,4 +1,4 @@
-package revie.dto
+package revie.dto.chat
 
 import java.time.LocalDateTime
 

@@ -2,7 +2,7 @@ package revie.repository
 
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import revie.dto.ReviewSession
+import revie.dto.review.ReviewSession
 import revie.enums.ReviewStatus
 
 interface ReviewSessionRepository {
