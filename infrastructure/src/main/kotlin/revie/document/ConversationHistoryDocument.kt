@@ -2,23 +2,23 @@ package revie.document
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.mapping.Document
+import revie.dto.ConversationHistory
 
 @Document("conversation_history")
 class ConversationHistoryDocument(
   @Id
-  val id: String,
   val sessionId: String,
   val messages: List<ChatMessageDocument>
-){
-  fun toDto() = revie.dto.ConversationHistory(
-    id = id,
+) : BaseMongoDocument() {
+  fun toDto() = ConversationHistory(
     sessionId = sessionId,
-    messages = messages.map { it.toDto() }
+    messages = messages.map { it.toDto() },
+    createdAt = createdAt,
+    updatedAt = updatedAt
   )
 
   companion object{
-    fun from(dto: revie.dto.ConversationHistory) = ConversationHistoryDocument(
-      id = dto.id,
+    fun from(dto: ConversationHistory) = ConversationHistoryDocument(
       sessionId = dto.sessionId,
       messages = dto.messages.map { ChatMessageDocument.from(it) }
     )

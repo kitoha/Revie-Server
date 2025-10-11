@@ -1,7 +1,10 @@
 package revie.dto
 
+import java.time.LocalDateTime
+
 data class ConversationHistory(
-  val id: String,
   val sessionId: String,
   val messages: List<ChatMessage>,
+  val createdAt: LocalDateTime?,
+  val updatedAt: LocalDateTime?
 )

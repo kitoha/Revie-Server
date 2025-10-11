@@ -1,6 +1,7 @@
 package revie.document
 
 import revie.dto.ChatMessage
+import revie.enums.MessageRole
 import java.time.LocalDateTime
 
 data class ChatMessageDocument(
@@ -11,7 +12,7 @@ data class ChatMessageDocument(
 ) {
 
   fun toDto() = ChatMessage(
-    role = revie.enums.MessageRole.valueOf(role),
+    role = MessageRole.valueOf(role),
     content = content,
     timestamp = timestamp,
     metadata = metadata

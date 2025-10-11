@@ -18,4 +18,6 @@ interface ReviewSessionRepository {
   suspend fun deleteById(id: String)
 
   suspend fun existsById(id: String): Boolean
+
+  suspend fun findByUserIdAndPullRequestUrl(userId: String, pullRequestUrl: String): ReviewSession?
 }

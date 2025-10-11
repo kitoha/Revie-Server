@@ -82,4 +82,19 @@ class ReviewSessionRepositoryImpl(
   override suspend fun existsById(id: String): Boolean {
     return r2dbcRepository.existsById(id)
   }
+
+  override suspend fun findByUserIdAndPullRequestUrl(
+    userId: String,
+    pullRequestUrl: String
+  ): ReviewSession?{
+    val query = Query.query(
+      Criteria.where("user_id").`is`(userId)
+        .and("pull_request_url").`is`(pullRequestUrl)
+    )
+
+    return entityTemplate
+      .selectOne(query, ReviewSessionEntity::class.java)
+      .awaitFirstOrNull()
+      ?.toDto()
+  }
 }
