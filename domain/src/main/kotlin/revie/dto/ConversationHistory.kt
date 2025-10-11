@@ -7,4 +7,16 @@ data class ConversationHistory(
   val messages: List<ChatMessage>,
   val createdAt: LocalDateTime?,
   val updatedAt: LocalDateTime?
-)
+){
+
+  companion object{
+    fun create(sessionId: String, messages: List<ChatMessage>): ConversationHistory{
+      return ConversationHistory(
+        sessionId = sessionId,
+        messages = messages,
+        createdAt = null,
+        updatedAt = null
+      )
+    }
+  }
+}

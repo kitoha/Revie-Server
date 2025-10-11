@@ -1,12 +1,13 @@
 spring:
   r2dbc:
-    url: r2dbc:mariadb://localhost:3307/revie
+    url: r2dbc:postgresql://localhost:5433/revie
     username: revie
     password: revie1234
     pool:
       initial-size: 10
       max-size: 20
       max-idle-time: 30m
+      validation-query: SELECT 1
 
   data:
     mongodb:

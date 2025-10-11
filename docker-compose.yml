@@ -1,32 +1,27 @@
 # local 설정
 services:
-  # MariaDB
-  mariadb:
-    image: mariadb:11.2
-    container_name: revie-mariadb
+  postgresql:
+    image: pgvector/pgvector:pg16
+    container_name: revie-postgresql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root1234
-      MYSQL_DATABASE: revie
-      MYSQL_USER: revie
-      MYSQL_PASSWORD: revie1234
+      POSTGRES_DB: revie
+      POSTGRES_USER: revie
+      POSTGRES_PASSWORD: revie1234
       TZ: Asia/Seoul
     ports:
-      - "3307:3306"
+      - "5433:5432"
     volumes:
-      - mariadb_data:/var/lib/mysql
-    command: [
-      '--character-set-server=utf8mb4',
-      '--collation-server=utf8mb4_unicode_ci',
-      '--log-bin-trust-function-creators=1'
-    ]
+      - postgresql_data:/var/lib/postgresql/data
+    command: postgres -c shared_preload_libraries=vector
     healthcheck:
-      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      test: ["CMD-SHELL", "pg_isready -U revie -d revie"]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
       - revie-network
+
 
   # MongoDB
   mongodb:
@@ -51,7 +46,7 @@ services:
       - revie-network
 
 volumes:
-  mariadb_data:
+  postgresql_data:
     driver: local
   mongodb_data:
     driver: local

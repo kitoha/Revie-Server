@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.reactive.TransactionalOperator
 import org.springframework.transaction.reactive.executeAndAwait
 import revie.dto.ConversationHistory
+import revie.dto.ReviewDetailDto
 import revie.dto.ReviewListDto
 import revie.dto.ReviewSession
 import revie.enums.ReviewStatus
@@ -32,24 +33,19 @@ class ReviewService (
     }
 
     val sessionId = Tsid.generate()
-    val session = ReviewSession(
-      id = sessionId,
+    val session = ReviewSession.create(
+      sessionId = sessionId,
       userId = userId,
       pullRequestUrl = pullRequestUrl,
-      title = title,
-      status = ReviewStatus.NEW,
-      createdAt = null,
-      updatedAt = null
+      title = title
     )
 
     return transactionalOperator.executeAndAwait {
       val savedSession = reviewSessionRepository.save(session)
 
-      val history = ConversationHistory(
+      val history = ConversationHistory.create(
         sessionId = sessionId,
-        messages = emptyList(),
-        createdAt = null,
-        updatedAt = null
+        messages = emptyList()
       )
       conversationHistoryRepository.save(history)
       savedSession
@@ -68,7 +64,7 @@ class ReviewService (
 
     return sessions.map{ session ->
       val stat = stats[session.id]
-      ReviewListDto(
+      ReviewListDto.create(
         sessionId = session.id,
         title = session.title,
         pullRequestUrl = session.pullRequestUrl,
@@ -81,6 +77,25 @@ class ReviewService (
     }
   }
 
+  suspend fun getReviewDetail(sessionId: String): ReviewDetailDto{
+    val session = reviewSessionRepository.findById(sessionId)
+      ?: throw IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId")
+
+    val history = conversationHistoryRepository.findBySessionId(sessionId)
+      ?: throw IllegalArgumentException("존재하지 않는 대화 내역입니다: $sessionId")
+
+    return ReviewDetailDto.create(
+      sessionId = session.id,
+      userId = session.userId,
+      title = session.title,
+      pullRequestUrl = session.pullRequestUrl,
+      status = session.status,
+      messages = history.messages,
+      createdAt = session.createdAt,
+      updatedAt = session.updatedAt
+    )
+  }
+
   suspend fun updateReviewStatus(
     sessionId: String,
     status: ReviewStatus
@@ -90,6 +105,18 @@ class ReviewService (
 
     val updatedSession = session.updateStatus(status)
     return reviewSessionRepository.save(updatedSession)
+  }
+
+  suspend fun deleteReview(sessionId: String) {
+    val exists = reviewSessionRepository.existsById(sessionId)
+    if (!exists) {
+      throw IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId")
+    }
+
+    return transactionalOperator.executeAndAwait {
+      conversationHistoryRepository.deleteBySessionId(sessionId)
+      reviewSessionRepository.deleteById(sessionId)
+    }
   }
 
 }

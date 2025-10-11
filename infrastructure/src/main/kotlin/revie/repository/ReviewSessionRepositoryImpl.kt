@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository
 import revie.dto.ReviewSession
 import revie.entity.ReviewSessionEntity
 import revie.enums.ReviewStatus
+import revie.utils.Tsid
 
 @Repository
 class ReviewSessionRepositoryImpl(
@@ -26,7 +27,8 @@ class ReviewSessionRepositoryImpl(
   }
 
   override suspend fun findById(id: String): ReviewSession? {
-    return r2dbcRepository.findById(id)?.toDto()
+    val longId  = Tsid.decode(id)
+    return r2dbcRepository.findById(longId )?.toDto()
   }
 
   override suspend fun findByUserId(userId: String): List<ReviewSession> {
@@ -76,11 +78,13 @@ class ReviewSessionRepositoryImpl(
   }
 
   override suspend fun deleteById(id: String) {
-    r2dbcRepository.deleteById(id)
+    val longId  = Tsid.decode(id)
+    r2dbcRepository.deleteById(longId )
   }
 
   override suspend fun existsById(id: String): Boolean {
-    return r2dbcRepository.existsById(id)
+    val longId  = Tsid.decode(id)
+    return r2dbcRepository.existsById(longId)
   }
 
   override suspend fun findByUserIdAndPullRequestUrl(

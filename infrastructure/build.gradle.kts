@@ -17,7 +17,7 @@ dependencies {
   implementation("org.springframework:spring-tx")
 
   implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-  implementation("org.mariadb:r2dbc-mariadb")
+  implementation("org.postgresql:r2dbc-postgresql")
   implementation("io.r2dbc:r2dbc-pool")
 
   implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
