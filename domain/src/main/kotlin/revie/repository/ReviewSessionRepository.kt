@@ -1,23 +1,25 @@
 package revie.repository
 
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import revie.dto.ReviewSession
 import revie.enums.ReviewStatus
 
 interface ReviewSessionRepository {
 
-  suspend fun save(session: ReviewSession): ReviewSession
+  fun save(session: ReviewSession): Mono<ReviewSession>
 
-  suspend fun findById(id: String): ReviewSession?
+  fun findById(id: String): Mono<ReviewSession>
 
-  suspend fun findByUserId(userId: String): List<ReviewSession>
+  fun findByUserId(userId: String): Flux<ReviewSession>
 
-  suspend fun findByUserIdAndStatus(userId: String, status: ReviewStatus): List<ReviewSession>
+  fun findByUserIdAndStatus(userId: String, status: ReviewStatus): Flux<ReviewSession>
 
-  suspend fun findByPullRequestUrl(pullRequestUrl: String): ReviewSession?
+  fun findByPullRequestUrl(pullRequestUrl: String): Mono<ReviewSession>
 
-  suspend fun deleteById(id: String)
+  fun deleteById(id: String): Mono<Void>
 
-  suspend fun existsById(id: String): Boolean
+  fun existsById(id: String): Mono<Boolean>
 
-  suspend fun findByUserIdAndPullRequestUrl(userId: String, pullRequestUrl: String): ReviewSession?
+  fun findByUserIdAndPullRequestUrl(userId: String, pullRequestUrl: String): Mono<ReviewSession>
 }

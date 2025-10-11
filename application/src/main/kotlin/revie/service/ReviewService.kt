@@ -2,9 +2,8 @@ package revie.service
 
 import org.springframework.stereotype.Service
 import org.springframework.transaction.reactive.TransactionalOperator
-import org.springframework.transaction.reactive.executeAndAwait
+import reactor.core.publisher.Mono
 import revie.dto.ConversationHistory
-import revie.dto.ReviewDetailDto
 import revie.dto.ReviewListDto
 import revie.dto.ReviewSession
 import revie.enums.ReviewStatus
@@ -18,105 +17,93 @@ class ReviewService (
   private val conversationHistoryRepository: ConversationHistoryRepository,
   private val transactionalOperator: TransactionalOperator
 ){
-
   /**
    * 새 리뷰 세션 생성
    */
-  suspend fun createReview(
+  fun createReview(
     userId: String,
     pullRequestUrl: String,
     title: String
-  ) : ReviewSession{
-    val existing = reviewSessionRepository.findByUserIdAndPullRequestUrl(userId, pullRequestUrl)
-    if (existing != null) {
-      throw IllegalArgumentException("이미 리뷰 중인 Pull Request입니다: $pullRequestUrl")
-    }
+  ): Mono<ReviewSession> {
+    return reviewSessionRepository.findByUserIdAndPullRequestUrl(userId, pullRequestUrl)
+      .flatMap<ReviewSession> {
+        Mono.error(IllegalArgumentException("이미 리뷰 중인 Pull Request입니다: $pullRequestUrl"))
+      }
+      .switchIfEmpty(
+        Mono.defer {
+          val sessionId = Tsid.generate()
+          val session = ReviewSession(
+            id = sessionId,
+            userId = userId,
+            pullRequestUrl = pullRequestUrl,
+            title = title,
+            status = ReviewStatus.NEW,
+            createdAt = null,
+            updatedAt = null
+          )
 
-    val sessionId = Tsid.generate()
-    val session = ReviewSession.create(
-      sessionId = sessionId,
-      userId = userId,
-      pullRequestUrl = pullRequestUrl,
-      title = title
-    )
-
-    return transactionalOperator.executeAndAwait {
-      val savedSession = reviewSessionRepository.save(session)
-
-      val history = ConversationHistory.create(
-        sessionId = sessionId,
-        messages = emptyList()
+          transactionalOperator.execute { _ ->
+            reviewSessionRepository.save(session)
+              .flatMap { savedSession ->
+                val history = ConversationHistory(
+                  sessionId = sessionId,
+                  messages = emptyList(),
+                  createdAt = null,
+                  updatedAt = null
+                )
+                conversationHistoryRepository.save(history)
+                  .thenReturn(savedSession)
+              }
+          }.next()
+        }
       )
-      conversationHistoryRepository.save(history)
-      savedSession
-    }
   }
 
-  suspend fun getReviewList(userId: String): List<ReviewListDto> {
-    val sessions = reviewSessionRepository.findByUserId(userId)
-
-    if(sessions.isEmpty()){
-      return emptyList()
-    }
-
-    val sessionIds = sessions.map { it.id }
-    val stats = conversationHistoryRepository.getStatsBatch(sessionIds)
-
-    return sessions.map{ session ->
-      val stat = stats[session.id]
-      ReviewListDto.create(
-        sessionId = session.id,
-        title = session.title,
-        pullRequestUrl = session.pullRequestUrl,
-        status = session.status,
-        messageCount = stat?.messageCount ?: 0,
-        lastMessage = stat?.lastMessageContent,
-        createdAt = session.createdAt,
-        updatedAt = session.updatedAt
-      )
-    }
+  /**
+   * 리뷰 목록 조회
+   */
+  fun getReviewList(userId: String): Mono<List<ReviewListDto>> {
+    return reviewSessionRepository.findByUserId(userId)
+      .collectList()
+      .flatMap { sessions ->
+        if (sessions.isEmpty()) {
+          Mono.just(emptyList())
+        } else {
+          val sessionIds = sessions.map { it.id }
+          conversationHistoryRepository.getStatsBatch(sessionIds)
+            .map { stats ->
+              sessions.map { session ->
+                val stat = stats[session.id]
+                ReviewListDto(
+                  sessionId = session.id,
+                  title = session.title,
+                  pullRequestUrl = session.pullRequestUrl,
+                  status = session.status,
+                  messageCount = stat?.messageCount ?: 0,
+                  lastMessage = stat?.lastMessageContent,
+                  createdAt = session.createdAt,
+                  updatedAt = session.updatedAt
+                )
+              }
+            }
+        }
+      }
   }
 
-  suspend fun getReviewDetail(sessionId: String): ReviewDetailDto{
-    val session = reviewSessionRepository.findById(sessionId)
-      ?: throw IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId")
-
-    val history = conversationHistoryRepository.findBySessionId(sessionId)
-      ?: throw IllegalArgumentException("존재하지 않는 대화 내역입니다: $sessionId")
-
-    return ReviewDetailDto.create(
-      sessionId = session.id,
-      userId = session.userId,
-      title = session.title,
-      pullRequestUrl = session.pullRequestUrl,
-      status = session.status,
-      messages = history.messages,
-      createdAt = session.createdAt,
-      updatedAt = session.updatedAt
-    )
-  }
-
-  suspend fun updateReviewStatus(
+  /**
+   * 리뷰 상태 업데이트
+   */
+  fun updateReviewStatus(
     sessionId: String,
     status: ReviewStatus
-  ): ReviewSession {
-    val session = reviewSessionRepository.findById(sessionId)
-      ?: throw IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId")
-
-    val updatedSession = session.updateStatus(status)
-    return reviewSessionRepository.save(updatedSession)
+  ): Mono<ReviewSession> {
+    return reviewSessionRepository.findById(sessionId)
+      .switchIfEmpty(
+        Mono.error(IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId"))
+      )
+      .map { it.updateStatus(status) }
+      .flatMap { updatedSession ->
+        reviewSessionRepository.save(updatedSession)
+      }
   }
-
-  suspend fun deleteReview(sessionId: String) {
-    val exists = reviewSessionRepository.existsById(sessionId)
-    if (!exists) {
-      throw IllegalArgumentException("존재하지 않는 리뷰 세션입니다: $sessionId")
-    }
-
-    return transactionalOperator.executeAndAwait {
-      conversationHistoryRepository.deleteBySessionId(sessionId)
-      reviewSessionRepository.deleteById(sessionId)
-    }
-  }
-
 }

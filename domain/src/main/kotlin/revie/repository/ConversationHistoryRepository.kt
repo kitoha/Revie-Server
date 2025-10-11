@@ -1,17 +1,18 @@
 package revie.repository
 
+import reactor.core.publisher.Mono
 import revie.dto.ConversationHistory
 import revie.dto.ConversationStats
 
 interface ConversationHistoryRepository {
 
-  suspend fun save(history: ConversationHistory): ConversationHistory
+  fun save(history: ConversationHistory): Mono<ConversationHistory>
 
-  suspend fun findBySessionId(sessionId: String): ConversationHistory?
+  fun findBySessionId(sessionId: String): Mono<ConversationHistory>
 
-  suspend fun existsBySessionId(sessionId: String): Boolean
+  fun existsBySessionId(sessionId: String): Mono<Boolean>
 
-  suspend fun deleteBySessionId(sessionId: String)
+  fun deleteBySessionId(sessionId: String): Mono<Void>
 
-  suspend fun getStatsBatch(sessionIds: List<String>): Map<String, ConversationStats>
+  fun getStatsBatch(sessionIds: List<String>): Mono<Map<String, ConversationStats>>
 }

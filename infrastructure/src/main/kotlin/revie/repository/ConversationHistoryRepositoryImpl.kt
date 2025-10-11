@@ -1,10 +1,10 @@
 package revie.repository
 
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate
 import org.springframework.data.mongodb.core.aggregation.Aggregation
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Mono
 import revie.document.ConversationHistoryDocument
 import revie.dto.ConversationHistory
 import revie.dto.ConversationStats
@@ -16,28 +16,27 @@ class ConversationHistoryRepositoryImpl(
   private val mongoTemplate: ReactiveMongoTemplate,
 ) : ConversationHistoryRepository {
 
-  override suspend fun save(history: ConversationHistory): ConversationHistory {
+  override fun save(history: ConversationHistory): Mono<ConversationHistory> {
     val document = ConversationHistoryDocument.from(history)
-    val saved = mongoRepository.save(document).awaitFirstOrNull()
-      ?: throw IllegalStateException("Failed to save conversation history")
-    return saved.toDto()
+    return mongoRepository.save(document)
+      .map { it.toDto() }
   }
 
-  override suspend fun findBySessionId(sessionId: String): ConversationHistory? {
+  override fun findBySessionId(sessionId: String): Mono<ConversationHistory> {
     return mongoRepository.findBySessionId(sessionId)
-      .awaitFirstOrNull()?.toDto()
+      .map { it.toDto() }
   }
 
-  override suspend fun existsBySessionId(sessionId: String): Boolean {
-    return mongoRepository.existsBySessionId(sessionId).awaitFirstOrNull() ?: false
+  override fun existsBySessionId(sessionId: String): Mono<Boolean> {
+    return mongoRepository.existsBySessionId(sessionId)
   }
 
-  override suspend fun deleteBySessionId(sessionId: String) {
-    mongoRepository.deleteBySessionId(sessionId).awaitFirstOrNull()
+  override fun deleteBySessionId(sessionId: String): Mono<Void> {
+    return mongoRepository.deleteBySessionId(sessionId)
   }
 
-  override suspend fun getStatsBatch(sessionIds: List<String>): Map<String, ConversationStats> {
-    if(sessionIds.isEmpty()) return emptyMap()
+  override fun getStatsBatch(sessionIds: List<String>): Mono<Map<String, ConversationStats>> {
+    if (sessionIds.isEmpty()) return Mono.just(emptyMap())
 
     val aggregation = Aggregation.newAggregation(
       Aggregation.match(Criteria.where("sessionId").`in`(sessionIds)),
@@ -47,19 +46,23 @@ class ConversationHistoryRepositoryImpl(
         .and("messages").arrayElementAt(-1).`as`("lastMessage")
     )
 
-    val results = mongoTemplate
-      .aggregate(aggregation, ConversationHistoryDocument::class.java, AggregationResult::class.java)
-      .collectList()
-      .awaitFirstOrNull() ?: emptyList()
-
-    return results.associate { result ->
-      result.sessionId to ConversationStats(
-        sessionId = result.sessionId,
-        messageCount = result.messageCount,
-        lastMessageContent = result.lastMessage?.content?.take(100),
-        lastMessageTimestamp = result.lastMessage?.timestamp
+    return mongoTemplate
+      .aggregate(
+        aggregation,
+        ConversationHistoryDocument::class.java,
+        AggregationResult::class.java
       )
-    }
+      .collectList()
+      .map { results ->
+        results.associate { result ->
+          result.sessionId to ConversationStats(
+            sessionId = result.sessionId,
+            messageCount = result.messageCount,
+            lastMessageContent = result.lastMessage?.content?.take(100),
+            lastMessageTimestamp = result.lastMessage?.timestamp
+          )
+        }
+      }
   }
 
   private data class AggregationResult(
@@ -72,6 +75,4 @@ class ConversationHistoryRepositoryImpl(
     val content: String,
     val timestamp: LocalDateTime
   )
-
-
 }

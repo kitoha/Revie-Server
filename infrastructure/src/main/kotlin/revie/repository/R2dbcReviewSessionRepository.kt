@@ -1,6 +1,6 @@
 package revie.repository
 
-import org.springframework.data.repository.kotlin.CoroutineCrudRepository
+import org.springframework.data.repository.reactive.ReactiveCrudRepository
 import revie.entity.ReviewSessionEntity
 
-interface R2dbcReviewSessionRepository : CoroutineCrudRepository<ReviewSessionEntity, Long>
+interface R2dbcReviewSessionRepository : ReactiveCrudRepository<ReviewSessionEntity, Long>

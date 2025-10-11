@@ -9,6 +9,8 @@ import org.springframework.data.r2dbc.core.R2dbcEntityTemplate
 import org.springframework.data.relational.core.query.Criteria
 import org.springframework.data.relational.core.query.Query
 import org.springframework.stereotype.Repository
+import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import revie.dto.ReviewSession
 import revie.entity.ReviewSessionEntity
 import revie.enums.ReviewStatus
@@ -20,85 +22,81 @@ class ReviewSessionRepositoryImpl(
   private val entityTemplate: R2dbcEntityTemplate
 ) : ReviewSessionRepository {
 
-  override suspend fun save(session: ReviewSession): ReviewSession {
+  override fun save(session: ReviewSession): Mono<ReviewSession> {
     val entity = ReviewSessionEntity.from(session)
-    val savedEntity = r2dbcRepository.save(entity)
-    return savedEntity.toDto()
+    return r2dbcRepository.save(entity)
+      .map { it.toDto() }
   }
 
-  override suspend fun findById(id: String): ReviewSession? {
-    val longId  = Tsid.decode(id)
-    return r2dbcRepository.findById(longId )?.toDto()
+  override fun findById(id: String): Mono<ReviewSession> {
+    val longId = Tsid.decode(id)
+    return r2dbcRepository.findById(longId)
+      .map { it.toDto() }
   }
 
-  override suspend fun findByUserId(userId: String): List<ReviewSession> {
+  override fun findByUserId(userId: String): Flux<ReviewSession> {
     val query = Query.query(
       Criteria.where("user_id").`is`(userId)
+        .and("deleted_at").isNull()
     ).sort(
-      Sort.by(
-        Sort.Order.desc("updated_at")
-      )
+      Sort.by(Sort.Order.desc("updated_at"))
     )
 
     return entityTemplate
       .select(query, ReviewSessionEntity::class.java)
-      .asFlow()
       .map { it.toDto() }
-      .toList()
   }
 
-  override suspend fun findByUserIdAndStatus(
+  override fun findByUserIdAndStatus(
     userId: String,
     status: ReviewStatus
-  ): List<ReviewSession> {
+  ): Flux<ReviewSession> {
     val query = Query.query(
       Criteria.where("user_id").`is`(userId)
         .and("status").`is`(status.name)
+        .and("deleted_at").isNull()
     ).sort(
-      Sort.by(
-        Sort.Order.desc("updated_at")
-      )
+      Sort.by(Sort.Order.desc("updated_at"))
     )
 
     return entityTemplate
       .select(query, ReviewSessionEntity::class.java)
-      .asFlow()
       .map { it.toDto() }
-      .toList()
   }
 
-  override suspend fun findByPullRequestUrl(pullRequestUrl: String): ReviewSession? {
+  override fun findByPullRequestUrl(pullRequestUrl: String): Mono<ReviewSession> {
     val query = Query.query(
       Criteria.where("pull_request_url").`is`(pullRequestUrl)
+        .and("deleted_at").isNull()
     )
 
     return entityTemplate
       .selectOne(query, ReviewSessionEntity::class.java)
-      .awaitFirstOrNull()?.toDto()
+      .map { it.toDto() }
   }
 
-  override suspend fun deleteById(id: String) {
-    val longId  = Tsid.decode(id)
-    r2dbcRepository.deleteById(longId )
+  override fun deleteById(id: String): Mono<Void> {
+    val longId = Tsid.decode(id)
+    return r2dbcRepository.deleteById(longId)
   }
 
-  override suspend fun existsById(id: String): Boolean {
-    val longId  = Tsid.decode(id)
+  override fun existsById(id: String): Mono<Boolean> {
+    val longId = Tsid.decode(id)
     return r2dbcRepository.existsById(longId)
   }
 
-  override suspend fun findByUserIdAndPullRequestUrl(
+  override fun findByUserIdAndPullRequestUrl(
     userId: String,
     pullRequestUrl: String
-  ): ReviewSession?{
+  ): Mono<ReviewSession> {
     val query = Query.query(
       Criteria.where("user_id").`is`(userId)
         .and("pull_request_url").`is`(pullRequestUrl)
+        .and("deleted_at").isNull()
     )
 
     return entityTemplate
       .selectOne(query, ReviewSessionEntity::class.java)
-      .awaitFirstOrNull()
-      ?.toDto()
+      .map { it.toDto() }
   }
 }
