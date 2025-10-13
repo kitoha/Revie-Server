@@ -22,8 +22,7 @@ class PrFileDiffRepositoryImpl(
 ) : PrFileDiffRepository{
 
   override fun save(
-    diff: PrFileDiff,
-    compressedContent: ByteArray
+    diff: PrFileDiff
   ): Mono<PrFileDiff> {
     val compressed = compressionService.compress(diff.diffContent)
     val entity = PrFileDiffEntity.from(diff, compressed)

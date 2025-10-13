@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono
 import revie.dto.file.PrFileDiff
 
 interface PrFileDiffRepository {
-  fun save(diff: PrFileDiff, compressedContent: ByteArray): Mono<PrFileDiff>
+  fun save(diff: PrFileDiff): Mono<PrFileDiff>
 
   fun findById(id: String): Mono<PrFileDiff>
 

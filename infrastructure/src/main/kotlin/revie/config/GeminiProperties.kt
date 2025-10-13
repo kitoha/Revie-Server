@@ -7,5 +7,7 @@ data class GeminiProperties(
   var apiKey: String = "",
   var apiUrl: String = "https://generativelanguage.googleapis.com/v1beta",
   var model: String = "gemini-2.0-flash-exp",
-  var embeddingModel: String = "text-embedding-004"
+  var embeddingModel: String = "text-embedding-004",
+  var temperature: Float = 0.7f,
+  var maxOutputTokens: Int = 8192,
 )
