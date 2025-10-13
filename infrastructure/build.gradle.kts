@@ -25,6 +25,7 @@ dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webflux")
 
   implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
+  implementation("com.google.genai:google-genai:1.6.0")
 
   implementation("org.springframework.boot:spring-boot-configuration-processor")
 
