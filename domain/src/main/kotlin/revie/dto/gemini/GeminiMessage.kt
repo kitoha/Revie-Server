@@ -15,5 +15,6 @@ data class GeminiMessage(
   companion object{
     fun user(text: String) = GeminiMessage("user", text)
     fun model(text: String) = GeminiMessage("model", text)
+    fun assistant(text: String) = GeminiMessage("assistant", text)
   }
 }

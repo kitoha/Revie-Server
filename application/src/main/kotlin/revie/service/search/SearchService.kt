@@ -46,4 +46,37 @@ class SearchService (
       .defaultIfEmpty(emptyList())
   }
 
+  fun formatContextForPrompt(context: ReviewContext): String {
+    val sb = StringBuilder()
+
+    if(context.recentMessages.isNotEmpty()){
+      sb.appendLine("## 최근 대화 (${context.recentMessages.size}개)")
+      context.recentMessages.takeLast(10).forEach { message ->
+        val prefix = when(message.role) {
+          revie.enums.MessageRole.USER -> "User"
+          revie.enums.MessageRole.ASSISTANT -> "Assistant"
+          revie.enums.MessageRole.SYSTEM -> "System"
+        }
+        sb.appendLine("$prefix: ${message.content}")
+      }
+      sb.appendLine()
+    }
+
+    if(context.similarDiffs.isNotEmpty()){
+      sb.appendLine("## 관련 코드 변경사항 (${context.similarDiffs.size}개)")
+      context.similarDiffs.forEach { diff ->
+        sb.appendLine("### 변경사항 ${diff.filePath}")
+        sb.appendLine("```diff")
+        sb.appendLine(diff.diffContent.take(500))
+        if(diff.diffContent.length > 500){
+          sb.appendLine("... (생략됨)")
+        }
+        sb.appendLine("```")
+        sb.appendLine()
+      }
+    }
+
+    return sb.toString().trim()
+  }
+
 }
