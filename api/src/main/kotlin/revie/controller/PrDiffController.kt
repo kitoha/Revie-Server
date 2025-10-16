@@ -1,10 +1,13 @@
 package revie.revie.controller
 
+import org.springframework.http.MediaType
+import org.springframework.http.codec.ServerSentEvent
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import revie.dto.file.PrFileDiff
 import revie.revie.resonse.ApiResponse
@@ -23,6 +26,23 @@ class PrDiffController(
     return prDiffService.getDiffs(sessionId).collectList()
       .map { diffs ->
         ApiResponse.success(data = diffs)
+      }
+  }
+
+  @GetMapping(
+    value = ["/{sessionId}/content/stream"],
+    produces = [MediaType.TEXT_EVENT_STREAM_VALUE]
+  )
+  fun getDiffsContentStream(
+    @PathVariable sessionId: String,
+  ): Flux<ServerSentEvent<PrFileDiff>> {
+    val diffs = prDiffService.getDiffs(sessionId)
+
+    return diffs
+      .map { diff ->
+        ServerSentEvent.builder<PrFileDiff>()
+          .data(diff)
+          .build()
       }
   }
 
