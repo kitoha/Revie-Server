@@ -45,6 +45,7 @@ class PrFileDiffVectorRepository(
         mapRowToEntity(row)
       }
       .all()
+      .doOnNext { it.markNotNew() }
       .map { entity ->
         val decompressed = compressionService.decompress(entity.diffContent)
         entity.toDto(decompressed)

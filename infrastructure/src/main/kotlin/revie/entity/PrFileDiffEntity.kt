@@ -1,6 +1,8 @@
 package revie.entity
 
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
+import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import revie.dto.file.PrFileDiff
@@ -29,7 +31,11 @@ class PrFileDiffEntity(
   @Column("embedding")
   val embedding: String? = null,
 
-) : BaseR2dbcEntity() {
+) : BaseR2dbcEntity(), Persistable<Long> {
+
+  @Transient
+  private var isNew: Boolean = true
+
   fun toDto(decompressedContent: String): PrFileDiff {
     return PrFileDiff(
       id = Tsid.encode(id),
@@ -41,6 +47,14 @@ class PrFileDiffEntity(
       createdAt = createdAt,
       updatedAt = updatedAt
     )
+  }
+
+  override fun getId(): Long = id
+
+  override fun isNew(): Boolean = isNew
+
+  fun markNotNew() {
+    this.isNew = false
   }
 
   companion object {

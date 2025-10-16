@@ -37,7 +37,7 @@ class PrDiffService(
       updatedAt = null
     )
 
-    return prFileDiffRepository.save(diff, compressed)
+    return prFileDiffRepository.save(diff)
   }
 
   fun saveDiffs(
@@ -84,7 +84,7 @@ class PrDiffService(
       .flatMap { diff ->
         val updated = diff.copy(embedding = embedding)
         val compressed = compressionService.compress(diff.diffContent)
-        prFileDiffRepository.save(updated, compressed)
+        prFileDiffRepository.save(updated)
       }
   }
 

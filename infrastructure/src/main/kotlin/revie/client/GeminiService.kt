@@ -3,17 +3,14 @@ package revie.client
 import com.google.genai.Client
 import com.google.genai.types.EmbedContentConfig
 import com.google.genai.types.GenerateContentConfig
-import com.google.genai.types.GenerationConfig
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import revie.config.GeminiProperties
 import revie.dto.gemini.GeminiMessage
-import kotlin.jvm.optionals.getOrNull
 
 @Component
-class GeminiClient(
+class GeminiService(
   private val client: Client,
   private val geminiProperties: GeminiProperties
 ) {

@@ -28,6 +28,7 @@ class PrFileDiffRepositoryImpl(
     val entity = PrFileDiffEntity.from(diff, compressed)
 
     return r2dbcRepository.save(entity)
+      .doOnNext { it.markNotNew() }
       .map { savedEntity ->
         savedEntity.toDto(diff.diffContent)
       }

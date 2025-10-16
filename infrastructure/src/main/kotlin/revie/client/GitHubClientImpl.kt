@@ -8,13 +8,14 @@ import reactor.core.publisher.Mono
 import revie.dto.github.GitHubDiffFile
 import revie.dto.github.GitHubPullRequest
 import revie.dto.github.GitHubPullRequestDiff
+import revie.repository.GitHubClient
 
 @Component
-class GitHubClient(
+class GitHubClientImpl(
   @Qualifier("gitHubWebClient") private val webClient: WebClient
-) {
+) : GitHubClient {
 
-  fun parsePullRequestUrl(url: String): Triple<String, String, Int> {
+  override fun parsePullRequestUrl(url: String): Triple<String, String, Int> {
     val regex = Regex("github\\.com/([^/]+)/([^/]+)/pull/(\\d+)")
     val matchResult = regex.find(url)
       ?: throw IllegalArgumentException("Invalid GitHub PR URL: $url")
@@ -23,7 +24,7 @@ class GitHubClient(
     return Triple(owner, repo, number.toInt())
   }
 
-  fun getPullRequest(owner: String, repo: String, number: Int): Mono<GitHubPullRequest> {
+  override fun getPullRequest(owner: String, repo: String, number: Int): Mono<GitHubPullRequest> {
     return webClient.get()
       .uri("/repos/$owner/$repo/pulls/$number")
       .retrieve()
@@ -42,7 +43,7 @@ class GitHubClient(
       }
   }
 
-  fun getPullRequestDiff(owner: String, repo: String, number: Int): Mono<GitHubPullRequestDiff> {
+  override fun getPullRequestDiff(owner: String, repo: String, number: Int): Mono<GitHubPullRequestDiff> {
     return webClient.get()
       .uri("/repos/$owner/$repo/pulls/$number/files")
       .retrieve()
@@ -63,12 +64,12 @@ class GitHubClient(
       }
   }
 
-  fun getPullRequestDiffByUrl(pullRequestUrl: String): Mono<GitHubPullRequestDiff> {
+  override fun getPullRequestDiffByUrl(pullRequestUrl: String): Mono<GitHubPullRequestDiff> {
     val (owner, repo, number) = parsePullRequestUrl(pullRequestUrl)
     return getPullRequestDiff(owner, repo, number)
   }
 
-  fun getPullRequestWithDiff(owner: String, repo: String, number: Int):
+  override fun getPullRequestWithDiff(owner: String, repo: String, number: Int):
       Mono<Pair<GitHubPullRequest, GitHubPullRequestDiff>> {
     return Mono.zip(
       getPullRequest(owner, repo, number),

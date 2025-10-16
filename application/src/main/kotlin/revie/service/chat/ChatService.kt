@@ -5,7 +5,7 @@ import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import revie.client.GeminiClient
+import revie.client.GeminiService
 import revie.dto.chat.ChatMessage
 import revie.dto.chat.ConversationHistory
 import revie.dto.gemini.GeminiMessage
@@ -17,7 +17,7 @@ import java.nio.charset.StandardCharsets
 
 @Service
 class ChatService (
-  private val geminiClient: GeminiClient,
+  private val geminiService: GeminiService,
   private val conversationHistoryRepository: ConversationHistoryRepository,
   private val searchService: SearchService,
   @Value("classpath:prompts/code-review-system.md")
@@ -40,7 +40,7 @@ class ChatService (
       .flatMap { context ->
         val messages = buildMessages(context, userMessage)
 
-        geminiClient.generateContent(messages)
+        geminiService.generateContent(messages)
           .flatMap { aiResponse ->
             saveConversation(sessionId, userMessage, aiResponse)
               .thenReturn(aiResponse)
@@ -55,7 +55,7 @@ class ChatService (
 
         val responseBuilder = StringBuilder()
 
-        geminiClient.generateContentStream(messages)
+        geminiService.generateContentStream(messages)
           .doOnNext { chunk ->
             responseBuilder.append(chunk)
           }
@@ -67,7 +67,7 @@ class ChatService (
   }
 
   fun simpleChat(sessionId: String, userMessage: String): Mono<String>{
-    return geminiClient.generateContent(userMessage)
+    return geminiService.generateContent(userMessage)
       .flatMap { aiResponse ->
         saveConversation(sessionId, userMessage, aiResponse)
           .thenReturn(aiResponse)

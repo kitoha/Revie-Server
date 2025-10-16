@@ -21,6 +21,7 @@ class ReviewSessionRepositoryImpl(
   override fun save(session: ReviewSession): Mono<ReviewSession> {
     val entity = ReviewSessionEntity.from(session)
     return r2dbcRepository.save(entity)
+      .doOnNext { it.markNotNew() }
       .map { it.toDto() }
   }
 

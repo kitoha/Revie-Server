@@ -11,16 +11,14 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://revie:revie1234@localhost:27017/revie?authSource=revie
+      uri: mongodb://root:root1234@localhost:27017/revie?authSource=admin
       database: revie
 
-  webflux:
-    base-path: /api
-
+# application.yml
 logging:
   level:
-    root: INFO
-    com.revie: DEBUG
+    io.r2dbc.postgresql.QUERY: DEBUG
+    io.r2dbc.postgresql.PARAM: DEBUG
+
+    org.springframework.r2dbc: DEBUG
     org.springframework.data.r2dbc: DEBUG
-    org.springframework.data.mongodb: DEBUG
-    io.r2dbc.pool: DEBUG
